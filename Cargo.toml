@@ -1,0 +1,14 @@
+[package]
+name = "hatanaka"
+version = "0.0.1"
+license-file = "LICENSE"
+authors = ["Guillaume W. Bres <guillaume.bressaix@gmail.com>"]
+description = "RINEX Compression & Decompression tool"
+homepage = "https://github.com/gwbres/hatanaka"
+keywords = ["rinex", "hatanaka", "compression", "decompression", "crinex"] 
+categories = ["science"]
+edition = "2018"
+readme = "README.md"
+
+[dependencies]
+rinex = "0.0.12" 
