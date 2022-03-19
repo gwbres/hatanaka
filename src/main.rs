@@ -2,11 +2,20 @@ use clap::App;
 use clap::load_yaml;
 use rinex::hatanaka;
 use std::str::FromStr;
-use std::io::{Write, BufRead, BufReader, Error};
+use std::io::{Write, BufRead, BufReader};
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+enum Error {
+    #[error("io error")]
+    IoError(#[from] std::io::Error),
+    #[error("hatanaka error")]
+    HatanakaError(#[from] rinex::hatanaka::Error),
+}
 
 fn main() -> Result<(), Error> {
     let yaml = load_yaml!("cli.yml");
-    let mut app = App::from_yaml(yaml);
+    let app = App::from_yaml(yaml);
 
     let matches = app.get_matches();
 
@@ -35,22 +44,57 @@ fn main() -> Result<(), Error> {
         if !line.contains("RINEX VERSION / TYPE") {
             panic!("this is not a valid RINEX");
         }
+        writeln!(output, "{}", line)?;
         let rnx_version = line.split_at(20).0;
         let rnx_version : u8 = f32::from_str(rnx_version.trim()).unwrap() as u8;
 
-        let mut inside_body = false;
+        let mut body = false;
+        let mut new_epoch = true;
+        let mut is_clock_offset = true;
+        let mut first_epoch = true;
+        let mut epoch_size : usize = 0;
+        let mut epoch_krn = hatanaka::Kernel::new(1);
+        let mut clock_krn = hatanaka::Kernel::new(1);
 
         for line in buffer.lines() {
             let l = line.unwrap();
 
-            if inside_body {
+            if body {
+                if new_epoch {
+                    if first_epoch {
+                        // TODO this only works for V3
+                        // attention a l'offset 11 ou 8 de epoch (V2/V3)
+                        if !l.starts_with("> ") {
+                            panic!("First epoch is faulty! Cannot intialize epoch kernel")
+                        }
+                        first_epoch = false;
+                        epoch_size = 24; //TODO parse sat#id
+                        epoch_krn.init(0, hatanaka::Dtype::Text(l))
+                            .unwrap();
+                    } else {
+                        epoch_size = 0; //TODO parse sat#id
+                        let recovered = epoch_krn.recover(hatanaka::Dtype::Text(l))
+                            .as_text()
+                            .unwrap();
+                        writeln!(output, "{}", recovered)?
+                    }
+                    is_clock_offset = true
+                } else {
+
+                    if is_clock_offset {
+                        is_clock_offset = false;
+                    } else {
+                        for _ in 0..epoch_size {
+
+                        }
+                    }
+                }
 
             } else {
                 // still inside header,
-                // straight copy..
-                writeln!(output, "{}", l).unwrap();
-                inside_body = l.contains("END OF HEADER");
-                if (inside_body) {
+                writeln!(output, "{}", l).unwrap(); // straight copy..
+                body = l.contains("END OF HEADER");
+                if body {
                     println!("End of RINEX header.\nStarting record decompression..")
                 }
             }
