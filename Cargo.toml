@@ -6,8 +6,10 @@ authors = ["Guillaume W. Bres <guillaume.bressaix@gmail.com>"]
 description = "RINEX Compression & Decompression tool"
 homepage = "https://github.com/gwbres/hatanaka"
 keywords = ["rinex", "hatanaka", "compression", "decompression", "crinex"] 
-categories = ["science"]
+categories = ["science", "command-line-interface", "command-line-utilities"]
 edition = "2018"
+readme = "README.md"
 
 [dependencies]
-rinex = "0.0.12" 
+rinex = { path = "/hdd/git/rinex" } 
+clap = { version = "~2.27.0", features = ["yaml"] }

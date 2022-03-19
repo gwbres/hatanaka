@@ -1,0 +1,15 @@
+name: hatanaka
+version: "0.0.1"
+author: Guillaume W. Bres <guillaume.bressaix@gmail.com>
+args:
+    - filepath:
+        short: fp
+        long: filepath
+        required: true
+        takes_value: true
+        help: Local RINEX file path
+    - crx2rnx:
+        short: d 
+        long: decompress 
+        takes_value: false 
+        help: Decompress (CRX2RNX) a given CRINEX file
