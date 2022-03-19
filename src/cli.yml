@@ -13,3 +13,8 @@ args:
         long: decompress 
         takes_value: false 
         help: Decompress (CRX2RNX) a given CRINEX file
+    - output:
+        short: o
+        long: output
+        takes_value: true
+        help: Set output file name

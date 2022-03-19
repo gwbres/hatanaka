@@ -21,16 +21,20 @@ fn main() -> Result<(), Error> {
 
     let filepath = matches.value_of("filepath")
         .unwrap();
+    let mut outpath = String::from(matches.value_of("output")
+        .unwrap_or("output"));
     
     let crx2rnx = matches.is_present("crx2rnx");
+    let rnx2crx = matches.is_present("rnx2crx");
 
     if crx2rnx {
+        outpath.push_str(".rnx");
+        let mut output = std::fs::File::create("output.rnx")?;
         println!("Decompressing \"{}\"", filepath);
 
         let mut line = String::new();
         let input = std::fs::File::open(filepath)?;
         let mut buffer = BufReader::new(input);
-        let mut output = std::fs::File::create("output.rnx")?;
 
         buffer.read_line(&mut line)?;
         if !line.contains("COMPACT RINEX FORMAT") {
@@ -100,6 +104,10 @@ fn main() -> Result<(), Error> {
             }
         }
     }
-    println!("DONE");
+
+    if rnx2crx {
+        //TODO
+    }
+
     Ok(())
 }
