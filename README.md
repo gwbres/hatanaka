@@ -68,7 +68,7 @@ usually described in the form of `COMMENTS` are preserved.
 ## Compression algorithm 
 
 Unlike `CRX2RNX`, this tool is not limited to 
-an M=5 maximal compression / decompression order
+an M=5 compression / decompression order
 in the core algorithm.   
 It actually dynamically adapts and will never fail, as long
 as the input content is a valid CRINEX.
