@@ -40,44 +40,59 @@ fn main() -> Result<(), Error> {
         let mut line = String::new();
         let input = std::fs::File::open(filepath)?;
         let mut buffer = BufReader::new(input);
-
-        buffer.read_line(&mut line)?;
-        if !line.contains("COMPACT RINEX FORMAT") {
-            panic!("this is not a valid CRINEX");
-        }
-        let crx_version = line.split_at(20).0;
-        let crx_version : u8 = f32::from_str(crx_version.trim()).unwrap() as u8;
         
-        buffer.read_line(&mut line)?;
-        buffer.read_line(&mut line)?;
-        if !line.contains("RINEX VERSION / TYPE") {
-            panic!("this is not a valid RINEX");
-        }
-        writeln!(output, "{}", line)?;
-        let rnx_version = line.split_at(20).0;
-        let rnx_version : u8 = f32::from_str(rnx_version.trim()).unwrap() as u8;
-
-        let mut body = false;
+        let mut header = true;
+        let mut header_count : u32 = 0;
+        let mut crx_version : u8 = 0;
+        let mut rnx_version_maj : u8 = 0;
+        
         let mut new_epoch = true;
         let mut is_clock_offset = true;
         let mut first_epoch = true;
         let mut epoch_flag : u8 = 0;
         let mut epoch_count: u8 = 0;
         let mut epoch_size : u8 = 0;
+        
         // text differentiator
         let mut epoch_krn = hatanaka::Kernel::new(1); 
+        let mut recovered_epoch : String = String::from("");
+        
         // numerical differentiators
         let mut clock_krn = hatanaka::Kernel::new(8); 
+        let mut recovered_clk : i64 = 0;
 
         for line in buffer.lines() {
             let l = &line.unwrap();
-            if body {
-                if rinex::is_comment!(l) {
-                    // special comment case:
-                    // leave as is !
-                    writeln!(output, "{}", l).unwrap();
-                    continue
+            if rinex::is_comment!(l) {
+                // special comment case:
+                // leave as is !
+                writeln!(output, "{}", l).unwrap();
+                continue
+            }
+            if header {
+                header_count += 1;
+                if header_count == 1 {
+                    if !l.contains("COMPACT RINEX FORMAT") {
+                        panic!("this is not a valid CRINEX");
+                    }
+                    let version = l.split_at(20).0;
+                    crx_version = f32::from_str(version.trim()).unwrap() as u8;
+                } else if header_count == 3 {
+                    if !l.contains("RINEX VERSION / TYPE") {
+                        panic!("this is not a valid RINEX");
+                    }
+                    let version = l.split_at(20).0;
+                    rnx_version_maj = f32::from_str(version.trim()).unwrap() as u8;
                 }
+
+                if header_count > 2 {
+                    writeln!(output, "{}", l)?
+                }
+                if l.contains("END OF HEADER") {
+                    println!("End of RINEX header.\nStarting record decompression..");
+                    header = false
+                }
+            } else { // BODY
                 if new_epoch {
                     if first_epoch {
                         // TODO this only works for V3
@@ -106,9 +121,8 @@ fn main() -> Result<(), Error> {
                     // identify # of epochs to be parsed
                     let recovered = epoch_krn.recover(hatanaka::Dtype::Text(l.to_string()))
                         .unwrap();
-                    let recovered = recovered.as_text()
+                    recovered_epoch = recovered.as_text()
                         .unwrap();
-                    println!("RECOVERED \"{}\"", recovered);
                     let mut offset :usize = 
                         2  // Y
                         +2+1 // m
@@ -120,10 +134,10 @@ fn main() -> Result<(), Error> {
                     if crx_version > 2 {
                         offset += 2  // Y is 4 digit
                     }
-                    if recovered.starts_with("> ") {
+                    if recovered_epoch.starts_with("> ") {
                         offset += 1 // CRINEX3 "> " marker
                     }
-                    let (_, rem) = &recovered.split_at(offset);
+                    let (_, rem) = &recovered_epoch.split_at(offset);
                     let (e_flag, rem) = rem.split_at(3);
                     epoch_flag = u8::from_str_radix(e_flag.trim(), 10)?;
                     let (n, _) = rem.split_at(3);
@@ -143,32 +157,47 @@ fn main() -> Result<(), Error> {
                         let num = i64::from_str_radix(l, 10)?;
                         let recovered = clock_krn.recover(hatanaka::Dtype::Numerical(num))
                             .unwrap();
-                        let recovered = recovered.as_numerical()
+                        recovered_clk = recovered.as_numerical()
                             .unwrap();
-                        println!("RECOVERED CLOCK OFFSET {}", recovered);
                     }
                     is_clock_offset = false;
                 
                 } else { // epoch parsing
+                    // TODO
                     // epoch flag > 2 is left untouched
                     // because a comment is usually attached to it
                     // match on epoch_flag
                     // epoch_flag > 2 => leave this epoch as is!
                     // anEd add following content
+
+                    if epoch_count == 0 {
+                        // writing epoch Header
+                        // using recovered content + clk offset
+                        match rnx_version_maj {
+                            1 | 2 => { // Old RINEX
+                                // system #id is embedded
+                                // and formatted on multiple lines
+                                // + squeeze clock offset
+                            },
+                            _ => { // Modern RINEX
+                                // skip systemd #id
+                                // + squeeze clock offset
+                                let header = recovered_epoch.as_str();
+                                let header = header.split_at(35).0;
+                                write!(output, "{}         {}", header, (recovered_clk as f64)/1000.0_f64)? 
+                            },
+                        }
+                    }
+                    
                     epoch_count += 1;
+                    writeln!(output, "{}", "")?; // BLANK at the moment
+
                     if epoch_count == epoch_size {
                         epoch_count = 0;
                         new_epoch = true
                     }
                 }
-            } else {
-                // still inside header,
-                writeln!(output, "{}", l).unwrap(); // straight copy..
-                body = l.contains("END OF HEADER");
-                if body {
-                    println!("End of RINEX header.\nStarting record decompression..")
-                }
-            }
+            } // RINEX body
         }
     }
 
