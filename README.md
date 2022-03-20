@@ -17,6 +17,9 @@ which allows powerful interaction with these complex files.
 latest revision is `CRINEX3` and is specified 
 [here](https://www.gsi.go.jp/ENGLISH/Bulletin55.html).
 
+For more information on the compression core algorithm,   
+refer to the `hatanaka` section of the library
+
 ## Supported revisions
 
 * [ ] CRINEX1  
