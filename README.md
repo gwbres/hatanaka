@@ -19,26 +19,45 @@ and allows easy RINEX files manipulation.
 Run with `cargo`
 
 ```bash
-cargo run
+cargo run -- args
 ```
 
-Set the output path with `-o` (otherwise, default name is "output"):
+Decompress a `CRINEX` file with `-d`
 
 ```bash
-cargo run -- --fp /tmp/data.22d -o /tmp/data.22o -d
+cargo run -- --filepath /tmp/data.22d -o /tmp/data.22o -d
 ```
+
+This produces an "output.rnx" RINEX file.   
+Use `-o` to set the output file name:
+
+```bash
+cargo run -- -fp /tmp/data.22d -o /tmp/data.22o -d
+cargo run -- -fp /tmp/data.22d --output /tmp/data.22o -d
+```
+
+## `--strict` flag for modern Observation Data
+
+CRX2RNX seems to violate RINEX definitions 
+when decompressing V > 2 (modern) RINEX Observation data, 
+because decompressed epochs span more than 60 characters per line.
+
+This tool behaves like CRX2RNX by default, but you can strictly
+follow RINEX definitions with the `--strict` flag.
+
+This only affects modern Observation data decompression
 
 ## Epoch events 
 
 All comments contained in the `RINEX` record are
 left as is. Just like `CRX2RNX`, epochs with weird events are left untouched.
 Therefore, explanations on these epochs events, 
-usually described in the form of `COMMENTS` are maintained.   
+usually described in the form of `COMMENTS` are preserved. 
 
 ## Compression algorithm 
 
-This tool follows `CRX2RNX` behavior but it is not limited
-to a compression / decompression order of 5 in the algorithm.   
+Unlikie CRX2RNX, this tool is not limited to 
+an M=5 maximal compression / decompression order
+in the core algorithm.   
 It actually dynamically adapts and will never fail, as long
 as the input content is a valid CRINEX.
-
