@@ -1,4 +1,4 @@
-//! hatanaka main.rs    
+//! hatanaka    
 //! command line tool to compress RINEX files   
 //! and decompress CRINEX files
 use clap::App;
@@ -21,20 +21,35 @@ enum Error {
 fn main() -> Result<(), Error> {
     let yaml = load_yaml!("cli.yml");
     let app = App::from_yaml(yaml);
-
     let matches = app.get_matches();
-
+    
     let filepath = matches.value_of("filepath")
         .unwrap();
-    let mut outpath = String::from(matches.value_of("output")
-        .unwrap_or("output"));
     
     let crx2rnx = matches.is_present("crx2rnx");
     let rnx2crx = matches.is_present("rnx2crx");
+    let strict_flag = matches.is_present("strict");
+
+    let outpath : String = match crx2rnx {
+        true => { //CRX2RNX
+            let output = matches.value_of("output")
+                .unwrap_or("output");
+            let mut out = String::from(output);
+            out.push_str(".rnx");
+            out
+        },
+        _ => { // RNX2CRX
+            let output = matches.value_of("output")
+                .unwrap_or("output");
+            let mut out = String::from(output);
+            out.push_str(".crx");
+            out
+        },
+    };
+ 
+    let mut output = std::fs::File::create(outpath)?;
 
     if crx2rnx {
-        outpath.push_str(".rnx");
-        let mut output = std::fs::File::create("output.rnx")?;
         println!("Decompressing \"{}\"", filepath);
 
         let mut line = String::new();
@@ -114,8 +129,6 @@ fn main() -> Result<(), Error> {
                                 }
                             },
                         }
-                        
-                        epoch_size = 24; //TODO parse sat#id
                         first_epoch = false;
                     } 
                     // identify # of epochs to be parsed
@@ -130,18 +143,19 @@ fn main() -> Result<(), Error> {
                         +2+1 // h
                         +2+1 // m
                         +11  // s
-                        +1;  // ">" or "&" init. marker
-                    if crx_version > 2 {
+                        +1;  // ">" or "&" init. markers
+                    if rnx_version_maj > 2 {
                         offset += 2  // Y is 4 digit
                     }
-                    if recovered_epoch.starts_with("> ") {
-                        offset += 1 // CRINEX3 "> " marker
+                    if recovered_epoch.starts_with("> ") { // CRINEX3 "> " marker 
+                        offset += 1 // has 1 extra whitespace
                     }
                     let (_, rem) = &recovered_epoch.split_at(offset);
                     let (e_flag, rem) = rem.split_at(3);
                     epoch_flag = u8::from_str_radix(e_flag.trim(), 10)?;
                     let (n, _) = rem.split_at(3);
                     epoch_size = u8::from_str_radix(n.trim(), 10)?; 
+                    println!("RECOVERED \"{}\"", recovered_epoch);
                     new_epoch = false;
                     is_clock_offset = true
 
@@ -163,34 +177,48 @@ fn main() -> Result<(), Error> {
                     is_clock_offset = false;
                 
                 } else { // epoch parsing
-                    // TODO
-                    // epoch flag > 2 is left untouched
-                    // because a comment is usually attached to it
-                    // match on epoch_flag
-                    // epoch_flag > 2 => leave this epoch as is!
-                    // anEd add following content
+                    if epoch_flag > 2 {
+                        // TODO leave epoch content as is!
+                        // epoch event, something happened,
+                        // probably some COMMENTS attached to it
+                    } else {
 
-                    if epoch_count == 0 {
-                        // writing epoch Header
-                        // using recovered content + clk offset
+                        if epoch_count == 0 {
+                            // writing epoch Header
+                            // using recovered content + clk offset
+                            match rnx_version_maj {
+                                1 | 2 => { // Old RINEX
+                                    // system #id is embedded
+                                    // and formatted on multiple lines
+                                    // + squeeze clock offset
+                                    //TODO
+                                    //loop tant que header.split_at(x).1 exists
+                                },
+                                _ => { // Modern RINEX
+                                    // skip systemd #id
+                                    // + squeeze clock offset
+                                    let header = recovered_epoch.as_str();
+                                    let header = header.split_at(35).0;
+                                    writeln!(output, "{}         {}", header, (recovered_clk as f64)/1000.0_f64)? 
+                                },
+                            }
+                        }
+
                         match rnx_version_maj {
                             1 | 2 => { // Old RINEX
-                                // system #id is embedded
-                                // and formatted on multiple lines
-                                // + squeeze clock offset
+                                // plain data
                             },
                             _ => { // Modern RINEX
-                                // skip systemd #id
-                                // + squeeze clock offset
+                                // retrieve system #ID from recovered header
                                 let header = recovered_epoch.as_str();
-                                let header = header.split_at(35).0;
-                                writeln!(output, "{}         {}", header, (recovered_clk as f64)/1000.0_f64)? 
+                                let offset : usize = std::cmp::min((41 + 3*(epoch_count+1)).into(), header.len());
+                                let system = header.split_at(offset.into()).0;
+                                let system = system.split_at(system.len()-3).1; // grab last 3 XXX
+                                writeln!(output, "{}", system)?
                             },
                         }
-                    }
-                    
+                    } // epoch event 
                     epoch_count += 1;
-                    writeln!(output, "{}", "")?; // BLANK at the moment
                     if epoch_count == epoch_size {
                         epoch_count = 0;
                         new_epoch = true
