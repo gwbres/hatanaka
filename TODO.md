@@ -9,3 +9,4 @@
 * [ ] improve doc
 * [ ] command line: improve -d -c are mandatory but mutually exclusive
 * [ ] CI: check at least all command line args
+* [ ] could use "diff .RNX RNX. -s -q "Files [...] are identical"
