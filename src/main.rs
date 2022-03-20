@@ -184,14 +184,13 @@ fn main() -> Result<(), Error> {
                                 // + squeeze clock offset
                                 let header = recovered_epoch.as_str();
                                 let header = header.split_at(35).0;
-                                write!(output, "{}         {}", header, (recovered_clk as f64)/1000.0_f64)? 
+                                writeln!(output, "{}         {}", header, (recovered_clk as f64)/1000.0_f64)? 
                             },
                         }
                     }
                     
                     epoch_count += 1;
                     writeln!(output, "{}", "")?; // BLANK at the moment
-
                     if epoch_count == epoch_size {
                         epoch_count = 0;
                         new_epoch = true
