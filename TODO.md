@@ -7,3 +7,4 @@
 * [ ] RNX2CRX V3, V4
 * [ ] possibility to zip ?
 * [ ] improve doc
+* [ ] command line: improve -d -c are mandatory but mutually exclusive
