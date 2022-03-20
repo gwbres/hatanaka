@@ -8,3 +8,4 @@
 * [ ] possibility to zip ?
 * [ ] improve doc
 * [ ] command line: improve -d -c are mandatory but mutually exclusive
+* [ ] CI: check at least all command line args
