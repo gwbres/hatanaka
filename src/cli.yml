@@ -13,6 +13,11 @@ args:
         long: decompress 
         takes_value: false 
         help: Decompress (CRX2RNX) a given CRINEX file
+    - strict:
+        short: s
+        long: strict
+        takes_value: false
+        help: Output V>2 RINEX Observation Data respecting standard definition 
     - output:
         short: o
         long: output
