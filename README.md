@@ -1,5 +1,4 @@
-# RINEX Cli 
-Command line tool to handle, manage and analyze RINEX files
+# Hatanaka 
 
 [![crates.io](https://img.shields.io/crates/v/hatanaka.svg)](https://crates.io/crates/hatanaka)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue?style=flat-square)](https://github.com/gwbres/hatanaka/blob/main/LICENSE-APACHE)
@@ -8,27 +7,33 @@ Command line tool to handle, manage and analyze RINEX files
 [![Rust](https://github.com/gwbres/hatanaka/actions/workflows/rust.yml/badge.svg)](https://github.com/gwbres/hatanaka/actions/workflows/rust.yml)
 [![crates.io](https://docs.rs/hatanaka/badge.svg)](https://docs.rs/hatanaka/badge.svg)
 
-RINEX compression and decompression tool.
+`RINEX` file compression and decompression tool.  
+This tool implements the latest `RINEX`
+[crate](https://crates.io/crates/rinex)
+which allows powerful interaction with these complex files.
 
-This command line interface implements the latest 
-[Rinex crate](https://crates.io/crates/rinex)
-and allows easy RINEX files manipulation.
+*Yuki Hatanaka* came up with a simple yet efficient compression algorithm for
+`RINEX` Data,  
+latest revision is `CRINEX3` and is specified 
+[here](https://www.gsi.go.jp/ENGLISH/Bulletin55.html).
+
+## Supported revisions
+
+* [ ] CRINEX1  
+* [ ] CRINEX3  
+
+CRINEX2 does not technically exist
 
 ## Getting started
-
-Run with `cargo`
-
-```bash
-cargo run -- args
-```
 
 Decompress a `CRINEX` file with `-d`
 
 ```bash
-cargo run -- --filepath /tmp/data.22d -o /tmp/data.22o -d
+cargo run -- --filepath /tmp/data.22d -d
 ```
 
 This produces an "output.rnx" RINEX file.   
+
 Use `-o` to set the output file name:
 
 ```bash
@@ -36,27 +41,30 @@ cargo run -- -fp /tmp/data.22d -o /tmp/data.22o -d
 cargo run -- -fp /tmp/data.22d --output /tmp/data.22o -d
 ```
 
-## `--strict` flag for modern Observation Data
+## Modern Observation Data and `--strict` flag 
 
-CRX2RNX seems to violate RINEX definitions 
-when decompressing V > 2 (modern) RINEX Observation data, 
-because decompressed epochs span more than 60 characters per line.
+`CRX2RNX` violates RINEX standard 
+when decompressing V > 2 (modern) RINEX Observation data,   
+because decompressed epochs are not wrapped and are larger than 80 characters.    
 
-This tool behaves like CRX2RNX by default, but you can strictly
-follow RINEX definitions with the `--strict` flag.
+This tool behaves like `CRX2RNX` by default,  
+but you can change that behavior
+to follow `RINEX` definitnios strictly, by passing the `--strict` flag:
 
-This only affects modern Observation data decompression
+```bash
+cargo run -- -fp data.22d -d -s
+```
 
 ## Epoch events 
 
-All comments contained in the `RINEX` record are
-left as is. Just like `CRX2RNX`, epochs with weird events are left untouched.
+`COMMENTS` are preserved through compression / decompression, as you would expect.   
+Just like `CRX2RNX`, epochs with weird events are left untouched.  
 Therefore, explanations on these epochs events, 
 usually described in the form of `COMMENTS` are preserved. 
 
 ## Compression algorithm 
 
-Unlikie CRX2RNX, this tool is not limited to 
+Unlike `CRX2RNX`, this tool is not limited to 
 an M=5 maximal compression / decompression order
 in the core algorithm.   
 It actually dynamically adapts and will never fail, as long
