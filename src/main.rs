@@ -34,6 +34,8 @@ fn main() -> Result<(), Error> {
     
     let crx2rnx = matches.is_present("crx2rnx");
     let rnx2crx = matches.is_present("rnx2crx");
+    let m = u16::from_str_radix(matches.value_of("m")
+        .unwrap_or("8"),10).unwrap();
     let strict_flag = matches.is_present("strict");
 
     let outpath : String = match crx2rnx {
@@ -55,19 +57,25 @@ fn main() -> Result<(), Error> {
  
     let mut output = std::fs::File::create(outpath)?;
     if crx2rnx {
-        decompress(filepath, output)
+        decompress(filepath, m, output)?;
+        println!("RINEX file extracted");
+        Ok(())
     } else {
         Ok(())
     }
 }
 
-fn decompress (fp: &str, mut writer: std::fs::File) -> Result<(), Error> {
+/// Decompresses given file,   
+/// fp : filepath   
+/// m : maximal compression order for core algorithm    
+/// writer: stream
+fn decompress (fp: &str, m: u16, mut writer: std::fs::File) -> Result<(), Error> {
     let mut content = String::new();
     let mut hd_content = String::new();
     let input = std::fs::File::open(fp)?;
     let reader = BufReader::new(input);
     let mut header : header::Header = header::Header::default();
-    let mut decompressor = hatanaka::Decompressor::new(8); // TODO maximal order
+    let mut decompressor = hatanaka::Decompressor::new(m.into());
 
     let mut first_epoch = true;
     let mut epoch_len : usize = 0;

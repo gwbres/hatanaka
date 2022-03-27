@@ -22,8 +22,8 @@ refer to the `hatanaka` section of the library
 
 ## Supported revisions
 
-* [ ] CRINEX1  
-* [ ] CRINEX3  
+* [ ] CRINEX1 
+* [x] CRINEX3  
 
 CRINEX2 does not technically exist
 
@@ -32,7 +32,7 @@ CRINEX2 does not technically exist
 Decompress a `CRINEX` file with `-d`
 
 ```bash
-cargo run -- --filepath /tmp/data.22d -d
+cargo run -- -d --filepath /tmp/data.22d
 ```
 
 This produces an "output.rnx" RINEX file.   
@@ -40,23 +40,15 @@ This produces an "output.rnx" RINEX file.
 Use `-o` to set the output file name:
 
 ```bash
-cargo run -- -fp /tmp/data.22d -o /tmp/data.22o -d
-cargo run -- -fp /tmp/data.22d --output /tmp/data.22o -d
+cargo run -- -d --filepath /tmp/data.22d -o /tmp/myfile
+cargo run -- -d --filepath /tmp/data.22d --output /tmp/custom
 ```
 
 ## Modern Observation Data and `--strict` flag 
 
 `CRX2RNX` violates RINEX standard 
 when decompressing V > 2 (modern) RINEX Observation data,   
-because decompressed epochs are not wrapped and are larger than 80 characters.    
-
-This tool behaves like `CRX2RNX` by default,  
-but you can change that behavior
-to follow `RINEX` definitnios strictly, by passing the `--strict` flag:
-
-```bash
-cargo run -- -fp data.22d -d -s
-```
+because decompressed epochs are not contrainted to 80 characters.    
 
 ## Epoch events 
 
@@ -65,10 +57,19 @@ Just like `CRX2RNX`, epochs with weird events are left untouched.
 Therefore, explanations on these epochs events, 
 usually described in the form of `COMMENTS` are preserved. 
 
-## Compression algorithm 
+## Compression behavior & limitations 
 
-Unlike `CRX2RNX`, this tool is not limited to 
-an M=5 compression / decompression order
-in the core algorithm.   
-It actually dynamically adapts and will never fail, as long
-as the input content is a valid CRINEX.
+This tool uses an M=8 maximal compression order,   
+which should be fine for all CRINEX ever produced,   
+considering they were probably produced with `CRX2RNX`   
+which hardcodes an M=5 limitation.   
+
+Unlike `CRX2RNX`, this tool is not limited to M,   
+you can increase the default value if you think "higher"
+compression will be encountered in a given file: 
+```bash
+cargo run -- -d -m 8 --filepath /tmp/data.22d
+```
+
+Best compression performances seem to be obtained for m=4  
+which is handled by default.
