@@ -6,7 +6,6 @@ SOME COMMENTS FOR TESTING PURPOSES                          COMMENT
 OS Net              Ordnance Survey                         OBSERVER / AGENCY
 3022730             SEPT POLARX5        5.4.0               REC # / TYPE / VERS
 08420005            LEIAR25         LEIT                    ANT # / TYPE
-        0.5334        0.0000        0.0000                  ANTENNA: DELTA H/E/N
   4007952.9623  -100634.2663  4944058.9468                  APPROX POSITION XYZ
 C   12 C2X C6X C7X D2X D6X D7X L2X L6X L7X S2X S6X S7X      SYS / # / OBS TYPES
 E   16 C1C C5Q C7Q C8Q D1C D5Q D7Q D8Q L1C L5Q L7Q L8Q S1C  SYS / # / OBS TYPES
@@ -15,7 +14,6 @@ G   16 C1C C2L C2W C5Q D1C D2L D2W D5Q L1C L2L L2W L5Q S1C  SYS / # / OBS TYPES
        S2L S2W S5Q                                          SYS / # / OBS TYPES
 R   16 C1C C1P C2C C2P D1C D1P D2C D2P L1C L1P L2C L2P S1C  SYS / # / OBS TYPES
        S1P S2C S2P                                          SYS / # / OBS TYPES
-    18  2189     2                                          LEAP SECONDS
  C1C    0.000 C1P    0.000 C2C    0.000 C2P    0.000        GLONASS COD/PHS/BIS
  24 R01  1 R02 -4 R03  5 R04  6 R05  1 R06 -4 R07  5 R08  6 GLONASS SLOT / FRQ #
     R09 -2 R10 -7 R11  0 R12 -1 R13 -2 R14 -7 R15  0 R16 -1 GLONASS SLOT / FRQ #
