@@ -3,7 +3,6 @@ version: "0.0.1"
 author: Guillaume W. Bres <guillaume.bressaix@gmail.com>
 args:
     - filepath:
-        short: fp
         long: filepath
         required: true
         takes_value: true

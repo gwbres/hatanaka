@@ -6,7 +6,7 @@
 * [x] add clock offset correctly (V3,V4)
 * [ ] RNX2CRX V1, V2
 * [ ] RNX2CRX V3, V4
-* [ ] improve doc
+* [x] improve doc
 * [ ] possibility to zip & unzip ?
 * [ ] command line: improve -d -c are mandatory but mutually exclusive
 * [ ] CI: check at least all command line args
