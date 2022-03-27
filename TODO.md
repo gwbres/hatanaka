@@ -1,9 +1,9 @@
 * [ ] CRX2RNX V1, V2
-* [ ] CRX2RNX V3, V4
+* [x] CRX2RNX V3, V4
 * [x] must take epoch flag into account
 * [x] epoch flag > 2 : leave epoch as is
 * [ ] add clock offset correctly (V1,V2)
-* [ ] add clock offset correctly (V3,V4)
+* [x] add clock offset correctly (V3,V4)
 * [ ] RNX2CRX V1, V2
 * [ ] RNX2CRX V3, V4
 * [ ] improve doc
