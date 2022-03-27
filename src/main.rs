@@ -63,6 +63,7 @@ fn main() -> Result<(), Error> {
 
 fn decompress (fp: &str, mut writer: std::fs::File) -> Result<(), Error> {
     let mut content = String::new();
+    let mut hd_content = String::new();
     let input = std::fs::File::open(fp)?;
     let reader = BufReader::new(input);
     let mut header : header::RinexHeader = header::RinexHeader::default();
@@ -76,14 +77,21 @@ fn decompress (fp: &str, mut writer: std::fs::File) -> Result<(), Error> {
     for l in reader.lines() {
         let line = &l.unwrap();
         if !header_parsed {
-            content.push_str(line);
-            content.push_str("\n");
+            hd_content.push_str(line);
+            hd_content.push_str("\n");
+            if !line.contains("CRINEX VERS") && !line.contains("CRINEX PROG") {
+                // strip CRINEX special header
+                content.push_str(line);
+                content.push_str("\n");
+            }
             if line.contains("END OF HEADER") {
-                header = rinex::header::RinexHeader::from_str(&content)?;
+                // identify header section
+                header = rinex::header::RinexHeader::from_str(&hd_content)?;
+                println!("RINEX Header parsed");
                 write!(writer, "{}", content)?;
+                // reset for record section
                 content.clear();
                 header_parsed = true;
-                println!("RINEX Header parsed")
             }
         } else { // RINEX record
             let mut content : String = String::from(line);
