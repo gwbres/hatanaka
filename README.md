@@ -17,8 +17,7 @@ which allows powerful interaction with these complex files.
 latest revision is `CRINEX3` and is specified 
 [here](https://www.gsi.go.jp/ENGLISH/Bulletin55.html).
 
-For more information on the compression core algorithm,   
-refer to the `hatanaka` section of the library
+For more information on the compression core algorithm, refer to the `hatanaka` [module section](https://crates.io/crates/rinex)
 
 ## Supported revisions
 
@@ -57,19 +56,15 @@ Just like `CRX2RNX`, epochs with weird events are left untouched.
 Therefore, explanations on these epochs events, 
 usually described in the form of `COMMENTS` are preserved. 
 
-## Compression behavior & limitations 
+## Compression algorithm & limitations 
 
-This tool uses an M=8 maximal compression order,   
-which should be fine for all CRINEX ever produced,   
-considering they were probably produced with `CRX2RNX`   
-which hardcodes an M=5 limitation.   
+This tool uses an M=8 maximal compression order, which should be fine for all CRINEX ever produced,   
+considering they were probably produced by `CRX2RNX` which hardcodes an M=5 limitation.   
 
-Unlike `CRX2RNX`, this tool is not limited to M,   
-you can increase the default value if you think "higher"
+Unlike `CRX2RNX`, this tool is not limited to M, you can increase the default value if you think higher   
 compression will be encountered in a given file: 
 ```bash
-cargo run -- -d -m 8 --filepath /tmp/data.22d
+cargo run -- -d -M 8 --filepath /tmp/data.22d
 ```
 
-Best compression performances seem to be obtained for m=4  
-which is handled by default.
+Best compression performances seem to be obtained for M=4, which is handled by default.
