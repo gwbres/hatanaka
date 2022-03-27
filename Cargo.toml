@@ -1,6 +1,6 @@
 [package]
 name = "hatanaka"
-version = "0.0.1"
+version = "0.0.2"
 license-file = "LICENSE"
 authors = ["Guillaume W. Bres <guillaume.bressaix@gmail.com>"]
 description = "RINEX Compression & Decompression tool"
@@ -11,6 +11,6 @@ edition = "2018"
 readme = "README.md"
 
 [dependencies]
-rinex = { path = "/hdd/git/rinex" } 
+rinex = "0.2.2" 
 clap = { version = "~2.27.0", features = ["yaml"] }
 thiserror = "1"
