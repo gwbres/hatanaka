@@ -66,7 +66,7 @@ fn decompress (fp: &str, mut writer: std::fs::File) -> Result<(), Error> {
     let mut hd_content = String::new();
     let input = std::fs::File::open(fp)?;
     let reader = BufReader::new(input);
-    let mut header : header::RinexHeader = header::RinexHeader::default();
+    let mut header : header::Header = header::Header::default();
     let mut decompressor = hatanaka::Decompressor::new(8); // TODO maximal order
 
     let mut first_epoch = true;
@@ -86,7 +86,7 @@ fn decompress (fp: &str, mut writer: std::fs::File) -> Result<(), Error> {
             }
             if line.contains("END OF HEADER") {
                 // identify header section
-                header = rinex::header::RinexHeader::from_str(&hd_content)?;
+                header = rinex::header::Header::from_str(&hd_content)?;
                 println!("RINEX Header parsed");
                 write!(writer, "{}", content)?;
                 // reset for record section
