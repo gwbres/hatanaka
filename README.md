@@ -8,24 +8,28 @@
 [![crates.io](https://docs.rs/hatanaka/badge.svg)](https://docs.rs/hatanaka/badge.svg)
 
 `RINEX` file compression and decompression tool.  
-This tool implements the latest `RINEX`
-[crate](https://crates.io/crates/rinex)
-which allows powerful interaction with these complex files.
 
-*Yuki Hatanaka* came up with a simple yet efficient compression algorithm for
-`RINEX` Data,  
+This tool is based on the 
+[RINEX crate](https://crates.io/crates/rinex).
+
+*Yuki Hatanaka* created a simple yet efficient method to compress
+RINEX files, it's called CRINEX,   
 latest revision is `CRINEX3` and is specified 
 [here](https://www.gsi.go.jp/ENGLISH/Bulletin55.html).
 
-For more information on the compression core algorithm,   
-refer to the `hatanaka` section of the library
+For more information on the actual compression algorithm, refer to the [hatanaka section](https://crates.io/crates/rinex)
+of the library.
 
 ## Supported revisions
 
 * [ ] CRINEX1 
 * [x] CRINEX3  
 
-CRINEX2 does not technically exist
+CRINEX2 was never released
+
+## CRINEX
+
+RINEX Compression is an algorithm designed for Observation Data RINEX.
 
 ## Getting started
 
@@ -35,41 +39,46 @@ Decompress a `CRINEX` file with `-d`
 cargo run -- -d --filepath /tmp/data.22d
 ```
 
-This produces an "output.rnx" RINEX file.   
-
-Use `-o` to set the output file name:
+To change the default output file `output.rnx`, use the `-o` flag :
 
 ```bash
 cargo run -- -d --filepath /tmp/data.22d -o /tmp/myfile
 cargo run -- -d --filepath /tmp/data.22d --output /tmp/custom
 ```
 
-## Modern Observation Data and `--strict` flag 
+### `--strict` flag for modern OBS Data
 
 `CRX2RNX` violates RINEX standard 
 when decompressing V > 2 (modern) RINEX Observation data,   
 because decompressed epochs are not contrainted to 80 characters.    
 
+By default and at the moment, this tool behaves like `CRX2RNX`.  
+But the next release will propose a flag to change that behavior and
+strictly follow RINEX specifications:
+
+```bash
+cargo run -- -d -s --filepath data/V3/KUNZ00CZE.cnx
+```
+
+This flag has no impact when manipulating an old RINEX files.
+
 ## Epoch events 
 
 `COMMENTS` are preserved through compression / decompression, as you would expect.   
-Just like `CRX2RNX`, epochs with weird events are left untouched.  
-Therefore, explanations on these epochs events, 
-usually described in the form of `COMMENTS` are preserved. 
+Just like `CRX2RNX`, epochs with special events (flag > 2) are left untouched.  
+Therefore, explanations on these epochs events are preserved.
 
-## Compression behavior & limitations 
+## Compression algorithm & limitations 
 
-This tool uses an M=8 maximal compression order,   
-which should be fine for all CRINEX ever produced,   
-considering they were probably produced with `CRX2RNX`   
-which hardcodes an M=5 limitation.   
+This tool uses an M=8 maximal compression order, which should be fine for all CRINEX ever produced,   
+considering they were probably produced by `CRX2RNX` which hardcodes an M=5 limitation.   
 
-Unlike `CRX2RNX`, this tool is not limited to M,   
-you can increase the default value if you think "higher"
+Unlike `CRX2RNX`, this tool is not limited to an hardcoded M value, 
+you can increase the default value if you think higher   
 compression will be encountered in a given file: 
 ```bash
-cargo run -- -d -m 8 --filepath /tmp/data.22d
+cargo run -- -d -M 8 --filepath data/V3/KUNZ00CZE.cnx
 ```
 
-Best compression performances seem to be obtained for m=4  
-which is handled by default.
+According to Y. Hatanaka's publication, optimum compression performances are obtained for a 4th order compression,   
+which is handled with default parameters.
