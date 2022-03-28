@@ -14,3 +14,7 @@ readme = "README.md"
 rinex = "0.2.2" 
 clap = { version = "~2.27.0", features = ["yaml"] }
 thiserror = "1"
+
+[dev-dependencies]
+assert_cmd = "2.0"
+predicates = "2.1"

@@ -112,3 +112,58 @@ fn decompress (fp: &str, m: u16, mut writer: std::fs::File) -> Result<(), Error>
     }
     Ok(())
 }
+
+#[cfg(test)]
+mod test {
+    use assert_cmd::prelude::*;
+    use predicates::prelude::*;
+    use std::process::Command;
+    /// Runs `diff` to determines whether f1 & f2 
+    /// are strictly identical or not
+    fn diff_is_strictly_identical (f1: &str, f2: &str) -> Result<bool, std::string::FromUtf8Error> {
+        let output = Command::new("diff")
+            .arg("-q")
+            .arg("-Z")
+            .arg(f1)
+            .arg(f2)
+            .output()
+            .expect("failed to execute \"diff\"");
+        let output = String::from_utf8(output.stdout)?;
+        println!("OUPTUT: {}", output);
+        Ok(output.len()==0)
+    }
+    #[test]
+    /// Tests CRINEX3 decompression
+    fn test_decompression_v3()  -> Result<(), Box<dyn std::error::Error>> { 
+        let testpool = env!("CARGO_MANIFEST_DIR").to_owned() + "/data/V3";
+        let path = std::path::PathBuf::from(testpool.to_owned());
+        for e in std::fs::read_dir(path).unwrap() {
+            let entry = e.unwrap();
+            let path = entry.path();
+            let full_path = &path.to_str()
+                .unwrap();
+            let is_hidden = entry.file_name()
+                .to_str()
+                .unwrap()
+                .starts_with(".");
+            let is_crinex = entry.file_name()
+                .to_str()
+                .unwrap()
+                .ends_with(".crx");
+            if !path.is_dir() && !is_hidden && is_crinex {
+                let compare = full_path.strip_suffix(".crx").unwrap();
+                let compare = compare.to_owned() +".rnx";
+                let mut cmd = Command::cargo_bin("hatanaka")?;
+                cmd.arg("-d")
+                   .arg("--filepath")
+                   .arg(&path);
+                cmd.assert()
+                   .success();
+                let diff = diff_is_strictly_identical("output.rnx", &compare)
+                    .unwrap(); 
+                assert_eq!(diff,true)
+            }
+        }
+        Ok(())
+    }
+}
