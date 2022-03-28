@@ -16,6 +16,6 @@ Compression :
 
 Other :
 * [x] improve doc
-* [ ] improve definition : -d -c are mandatory but mutually exclusive
+* [x] improve definition : -d -c are mandatory but mutually exclusive
 * [x] CI: check at least all command line args
 * [x] could use "diff .RNX RNX. -s -q "Files [...] are identical"
