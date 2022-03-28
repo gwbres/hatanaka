@@ -36,14 +36,24 @@ RINEX Compression is an algorithm designed for Observation Data RINEX.
 Decompress a `CRINEX` file with `-d`
 
 ```bash
-cargo run -- -d --filepath /tmp/data.22d
+cargo run -- -d --filepath data/V1/wsra0010.21d
 ```
+
+By default this would produce a `data/V1/wsra0010.21o` RINEX file,   
+to respect naming conventions.
+
+```bash
+cargo run -- -d --filepath data/V3/KUNZ00CZE.crx
+```
+
+By default this would produce a `data/V3/KUNZ00CZE.rnx` RINEX file,   
+to respect naming conventions.
 
 To change the default output file `output.rnx`, use the `-o` flag :
 
 ```bash
-cargo run -- -d --filepath /tmp/data.22d -o /tmp/myfile
-cargo run -- -d --filepath /tmp/data.22d --output /tmp/custom
+cargo run -- -d --filepath data/V1/wsra0010.21d -o /tmp/v1/output.rnx
+cargo run -- -d --filepath data/V3/KUNZ00CZE.crx -o /tmp/v3/output.rnx
 ```
 
 ### `--strict` flag for modern OBS Data
