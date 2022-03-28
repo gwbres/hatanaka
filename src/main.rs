@@ -3,15 +3,11 @@
 //! and decompress CRINEX files
 use rinex::header;
 use rinex::hatanaka;
-use rinex::record::Sv;
-use rinex::version::Version;
-use rinex::constellation::Constellation;
 
 use clap::App;
 use clap::load_yaml;
 use thiserror::Error;
 use std::str::FromStr;
-use std::collections::HashMap;
 use std::io::{Write, BufRead, BufReader};
 
 #[derive(Error, Debug)]
@@ -38,24 +34,29 @@ fn main() -> Result<(), Error> {
         .unwrap_or("8"),10).unwrap();
     let strict_flag = matches.is_present("strict");
 
-    let outpath : String = match crx2rnx {
-        true => { //CRX2RNX
-            let output = matches.value_of("output")
-                .unwrap_or("output");
-            let mut out = String::from(output);
-            out.push_str(".rnx");
-            out
+    let default_output : String = match crx2rnx {
+        true => {
+            if filepath.ends_with("d") {
+                let rem = filepath.strip_suffix("d")
+                    .unwrap();
+                rem.to_owned() + "o"
+            } else if filepath.ends_with(".crx") {
+                let rem = filepath.strip_suffix(".crx")
+                    .unwrap();
+                rem.to_owned() + ".rnx"
+            } else {
+                String::from("output.rnx")
+            }
         },
-        _ => { // RNX2CRX
-            let output = matches.value_of("output")
-                .unwrap_or("output");
-            let mut out = String::from(output);
-            out.push_str(".crx");
-            out
+        false => {
+            String::from("output.crx")
         },
     };
- 
-    let mut output = std::fs::File::create(outpath)?;
+
+    let outpath : String = String::from(matches.value_of("output")
+        .unwrap_or(&default_output));
+    let output = std::fs::File::create(outpath)?;
+
     if crx2rnx {
         decompress(filepath, m, output)?;
         println!("RINEX file extracted");
@@ -77,10 +78,7 @@ fn decompress (fp: &str, m: u16, mut writer: std::fs::File) -> Result<(), Error>
     let mut header : header::Header = header::Header::default();
     let mut decompressor = hatanaka::Decompressor::new(m.into());
 
-    let mut first_epoch = true;
-    let mut epoch_len : usize = 0;
     let mut header_parsed = false;
-    let mut new_epoch = true;
     println!("Decompressing file \"{}\"", fp);
     for l in reader.lines() {
         let line = &l.unwrap();
@@ -129,8 +127,43 @@ mod test {
             .output()
             .expect("failed to execute \"diff\"");
         let output = String::from_utf8(output.stdout)?;
-        println!("OUPTUT: {}", output);
         Ok(output.len()==0)
+    }
+    #[test]
+    /// Tests CRINEX1 decompression
+    fn test_decompression_v1()  -> Result<(), Box<dyn std::error::Error>> { 
+        let testpool = env!("CARGO_MANIFEST_DIR").to_owned() + "/data/V1";
+        let path = std::path::PathBuf::from(testpool.to_owned());
+        for e in std::fs::read_dir(path).unwrap() {
+            let entry = e.unwrap();
+            let path = entry.path();
+            let full_path = &path.to_str()
+                .unwrap();
+            let is_hidden = entry.file_name()
+                .to_str()
+                .unwrap()
+                .starts_with(".");
+            let is_crinex = entry.file_name()
+                .to_str()
+                .unwrap()
+                .ends_with("d");
+            if !path.is_dir() && !is_hidden && is_crinex {
+                let base = full_path.strip_suffix("d")
+                    .unwrap();
+                let output = base.to_owned() + "o";
+                let compare = base.to_owned() +"-testo";
+                let mut cmd = Command::cargo_bin("hatanaka")?;
+                cmd.arg("-d")
+                   .arg("--filepath")
+                   .arg(&path);
+                cmd.assert()
+                   .success();
+                let diff = diff_is_strictly_identical(&output, &compare)
+                    .unwrap(); 
+                assert_eq!(diff,true)
+            }
+        }
+        Ok(())
     }
     #[test]
     /// Tests CRINEX3 decompression
@@ -151,15 +184,16 @@ mod test {
                 .unwrap()
                 .ends_with(".crx");
             if !path.is_dir() && !is_hidden && is_crinex {
-                let compare = full_path.strip_suffix(".crx").unwrap();
-                let compare = compare.to_owned() +".rnx";
+                let base = full_path.strip_suffix(".crx").unwrap();
+                let output = base.to_owned()  + ".rnx";
+                let compare = base.to_owned() + "-test.rnx";
                 let mut cmd = Command::cargo_bin("hatanaka")?;
                 cmd.arg("-d")
                    .arg("--filepath")
                    .arg(&path);
                 cmd.assert()
                    .success();
-                let diff = diff_is_strictly_identical("output.rnx", &compare)
+                let diff = diff_is_strictly_identical(&output, &compare)
                     .unwrap(); 
                 assert_eq!(diff,true)
             }
