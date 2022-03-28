@@ -114,7 +114,6 @@ fn decompress (fp: &str, m: u16, mut writer: std::fs::File) -> Result<(), Error>
 #[cfg(test)]
 mod test {
     use assert_cmd::prelude::*;
-    use predicates::prelude::*;
     use std::process::Command;
     /// Runs `diff` to determines whether f1 & f2 
     /// are strictly identical or not
