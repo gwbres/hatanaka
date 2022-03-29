@@ -149,6 +149,7 @@ mod test {
             if !path.is_dir() && !is_hidden && is_crinex {
                 let base = full_path.strip_suffix("d")
                     .unwrap();
+                println!("decompressing file \"{}\"", base);
                 let output = base.to_owned() + "o";
                 let compare = base.to_owned() +"-testo";
                 let mut cmd = Command::cargo_bin("hatanaka")?;
@@ -157,9 +158,9 @@ mod test {
                    .arg(&path);
                 cmd.assert()
                    .success();
-                let diff = diff_is_strictly_identical(&output, &compare)
+                let identical = diff_is_strictly_identical(&output, &compare)
                     .unwrap(); 
-                assert_eq!(diff,true)
+                assert_eq!(identical,true)
             }
         }
         Ok(())
@@ -184,6 +185,7 @@ mod test {
                 .ends_with(".crx");
             if !path.is_dir() && !is_hidden && is_crinex {
                 let base = full_path.strip_suffix(".crx").unwrap();
+                println!("decompressing file \"{}\"", base);
                 let output = base.to_owned()  + ".rnx";
                 let compare = base.to_owned() + "-test.rnx";
                 let mut cmd = Command::cargo_bin("hatanaka")?;
@@ -192,9 +194,9 @@ mod test {
                    .arg(&path);
                 cmd.assert()
                    .success();
-                let diff = diff_is_strictly_identical(&output, &compare)
+                let identical = diff_is_strictly_identical(&output, &compare)
                     .unwrap(); 
-                assert_eq!(diff,true)
+                assert_eq!(identical,true)
             }
         }
         Ok(())
