@@ -11,7 +11,7 @@ edition = "2018"
 readme = "README.md"
 
 [dependencies]
-rinex = "0.2.2" 
+rinex = "0.3.0" 
 clap = { version = "~2.27.0", features = ["yaml"] }
 thiserror = "1"
 

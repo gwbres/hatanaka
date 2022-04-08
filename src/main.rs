@@ -72,39 +72,31 @@ fn main() -> Result<(), Error> {
 /// writer: stream
 fn decompress (fp: &str, m: u16, mut writer: std::fs::File) -> Result<(), Error> {
     let mut content = String::new();
-    let mut hd_content = String::new();
     let input = std::fs::File::open(fp)?;
     let reader = BufReader::new(input);
-    let mut header : header::Header = header::Header::default();
+    let header = header::Header::new(fp)?;
+    let mut end_of_header = false;
     let mut decompressor = hatanaka::Decompressor::new(m.into());
-
-    let mut header_parsed = false;
     println!("Decompressing file \"{}\"", fp);
     for l in reader.lines() {
         let line = &l.unwrap();
-        if !header_parsed {
-            hd_content.push_str(line);
-            hd_content.push_str("\n");
+        if !end_of_header {
             if !line.contains("CRINEX VERS") && !line.contains("CRINEX PROG") {
                 // strip CRINEX special header
-                content.push_str(line);
-                content.push_str("\n");
+                write!(writer, "{}", line)?
             }
             if line.contains("END OF HEADER") {
                 // identify header section
-                header = rinex::header::Header::from_str(&hd_content)?;
                 println!("RINEX Header parsed");
-                write!(writer, "{}", content)?;
                 // reset for record section
-                content.clear();
-                header_parsed = true;
+                end_of_header = true;
             }
         } else { // RINEX record
-            let mut content : String = String::from(line);
+            let mut content = line.to_string();
             if content.len() == 0 {
                 content = String::from(" ");
             }
-            let recovered = decompressor.recover(&header, &content)?;
+            let recovered = decompressor.decompress(&header, &content)?;
             write!(writer, "{}", recovered)?
         }
     }
