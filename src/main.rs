@@ -83,7 +83,7 @@ fn decompress (fp: &str, m: u16, mut writer: std::fs::File) -> Result<(), Error>
         if !end_of_header {
             if !line.contains("CRINEX VERS") && !line.contains("CRINEX PROG") {
                 // strip CRINEX special header
-                write!(writer, "{}", line)?
+                writeln!(writer, "{}", line)?
             }
             if line.contains("END OF HEADER") {
                 // identify header section
