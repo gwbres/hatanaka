@@ -7,7 +7,6 @@ use rinex::hatanaka;
 use clap::App;
 use clap::load_yaml;
 use thiserror::Error;
-use std::str::FromStr;
 use std::io::{Write, BufRead, BufReader};
 
 #[derive(Error, Debug)]
@@ -29,10 +28,10 @@ fn main() -> Result<(), Error> {
         .unwrap();
     
     let crx2rnx = matches.is_present("crx2rnx");
-    let rnx2crx = matches.is_present("rnx2crx");
+    let _rnx2crx = matches.is_present("rnx2crx");
     let m = u16::from_str_radix(matches.value_of("m")
         .unwrap_or("8"),10).unwrap();
-    let strict_flag = matches.is_present("strict");
+    let _strict_flag = matches.is_present("strict");
 
     let default_output : String = match crx2rnx {
         true => {
@@ -71,7 +70,6 @@ fn main() -> Result<(), Error> {
 /// m : maximal compression order for core algorithm    
 /// writer: stream
 fn decompress (fp: &str, m: u16, mut writer: std::fs::File) -> Result<(), Error> {
-    let mut content = String::new();
     let input = std::fs::File::open(fp)?;
     let reader = BufReader::new(input);
     let header = header::Header::new(fp)?;
