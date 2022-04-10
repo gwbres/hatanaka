@@ -21,7 +21,7 @@ of the library.
 
 ## Supported revisions
 
-* [ ] CRINEX1 
+* [x] CRINEX1 
 * [x] CRINEX3  
 
 CRINEX2 was never released
@@ -35,24 +35,24 @@ RINEX Compression is an algorithm designed for Observation Data RINEX.
 Decompress a `CRINEX` file with `-d`
 
 ```bash
-cargo run -- -d --filepath data/V1/wsra0010.21d
+hatanaka -d --filepath data/V1/wsra0010.21d
 ```
 
 By default this would produce a `data/V1/wsra0010.21o` RINEX file,   
 to respect naming conventions.
 
 ```bash
-cargo run -- -d --filepath data/V3/KUNZ00CZE.crx
+hatanaka -d --filepath data/V3/KUNZ00CZE.crx
 ```
 
 By default this would produce a `data/V3/KUNZ00CZE.rnx` RINEX file,   
 to respect naming conventions.
 
-To change the default output file `output.rnx`, use the `-o` flag :
+To change the default output file name, use the `-o` flag :
 
 ```bash
-cargo run -- -d --filepath data/V1/wsra0010.21d -o /tmp/v1/output.rnx
-cargo run -- -d --filepath data/V3/KUNZ00CZE.crx -o /tmp/v3/output.rnx
+hatanaka -d --filepath data/V1/wsra0010.21d -o /tmp/v1/output.rnx
+hatanaka -d --filepath data/V3/KUNZ00CZE.crx -o /tmp/v3/output.rnx
 ```
 
 ### `--strict` flag for modern OBS Data
@@ -62,14 +62,15 @@ when decompressing V > 2 (modern) RINEX Observation data,
 because decompressed epochs are not contrainted to 80 characters.    
 
 By default and at the moment, this tool behaves like `CRX2RNX`.  
-But the next release will propose a flag to change that behavior and
+
+Next release will propose a flag to change that behavior and
 strictly follow RINEX specifications:
 
 ```bash
-cargo run -- -d -s --filepath data/V3/KUNZ00CZE.cnx
+hatanaka -d -s --filepath data/V3/KUNZ00CZE.cnx
 ```
 
-This flag has no impact when manipulating an old RINEX files.
+This flag has no impact when dealing with old RINEX files.
 
 ## Epoch events 
 
@@ -86,7 +87,7 @@ Unlike `CRX2RNX`, this tool is not limited to an hardcoded M value,
 you can increase the default value if you think higher   
 compression will be encountered in a given file: 
 ```bash
-cargo run -- -d -M 8 --filepath data/V3/KUNZ00CZE.cnx
+hatanaka -d -M 8 --filepath data/V3/KUNZ00CZE.cnx
 ```
 
 According to Y. Hatanaka's publication, optimum compression performances are obtained for a 4th order compression,   
